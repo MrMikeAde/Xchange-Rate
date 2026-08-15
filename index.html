@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xchange Rate — free, live currency converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#9FE870;
+    --green-dark:#7FCB4F;
+    --forest:#163300;
+    --ink:#0E1A05;
+    --bg:#FFFFFF;
+    --card:#F4F6F1;
+    --border:#E5E9DE;
+    --muted:#5C6B52;
+    --radius:20px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--forest);
+    font-family:'Space Grotesk',sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:56px 20px;
+  }
+  .wrap{ width:100%; max-width:520px; }
+  .brandmark{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:24px;
+  }
+  .brandmark .dot{
+    width:14px; height:14px; border-radius:50%;
+    background:var(--green);
+  }
+  .brandmark span{
+    font-weight:700; font-size:15px; letter-spacing:-0.01em;
+  }
+  h1{
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    line-height:1.15;
+    margin:0 0 6px;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:15px;
+    margin:0 0 28px;
+  }
+  .card{
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:8px;
+  }
+  .panel{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .panel + .panel{ margin-top:4px; }
+  .panel label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .panel input[type=number]{
+    width:100%;
+    background:none;
+    border:none;
+    outline:none;
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    font-weight:700;
+    padding:0;
+  }
+  .amount-col{ flex:1; min-width:0; }
+  .ccy-select{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:8px 14px 8px 8px;
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+  .flag{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--forest);
+    color:var(--green);
+    font-size:10px;
+    font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ccy-select select{
+    border:none;
+    background:none;
+    outline:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+    appearance:none;
+    cursor:pointer;
+    padding-right:2px;
+  }
+  .swap-row{
+    display:flex;
+    justify-content:center;
+    margin:2px 0;
+    position:relative;
+    height:0;
+  }
+  .swap{
+    position:relative;
+    top:-14px;
+    width:40px; height:40px;
+    border-radius:50%;
+    background:var(--green);
+    border:4px solid var(--bg);
+    color:var(--forest);
+    cursor:pointer;
+    font-size:16px;
+    font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform 0.15s ease;
+    z-index:2;
+  }
+  .swap:hover{ transform:rotate(180deg); }
+  .rate-strip{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 12px 8px;
+    font-size:14px;
+    color:var(--muted);
+  }
+  .rate-strip strong{ color:var(--ink); font-weight:700; }
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+    margin-top:20px;
+  }
+  .stat{
+    background:var(--card);
+    border-radius:16px;
+    padding:14px 12px;
+    text-align:left;
+  }
+  .stat .k{ font-size:11px; color:var(--muted); font-weight:500; }
+  .stat .v{ font-size:17px; font-weight:700; margin-top:4px; color:var(--ink); }
+  .status{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:16px;
+    text-align:center;
+  }
+  .status.err{ color:#B3401F; }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card);
+    border-radius:999px;
+    padding:6px 12px;
+    font-size:12px;
+    font-weight:500;
+    color:var(--muted);
+    margin-top:24px;
+  }
+  .badge .dot{ width:8px; height:8px; border-radius:50%; background:var(--green-dark); }
+  footer{
+    margin-top:14px;
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+  footer a{ color:var(--forest); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brandmark"><div class="dot"></div><span>Xchange Rate</span></div>
+  <h1>Convert currencies,<br>ad free.</h1>
+  <p class="sub">Live mid-market rates from the European Central Bank. No account, no fees, no cost.</p>
+
+  <div class="card">
+    <div class="panel">
+      <div class="amount-col">
+        <label>Amount</label>
+        <input type="number" id="amount" value="1000" min="0" step="any">
+      </div>
+      <div class="ccy-select" id="fromWrap">
+        <div class="flag" id="fromFlag">GB</div>
+        <select id="from"></select>
+      </div>
+    </div>
+
+    <div class="swap-row"><div class="swap" id="swap" title="Swap currencies">&#8645;</div></div>
+
+    <div class="panel">
+      <div class="amount-col">
+        <label>Converted to</label>
+        <div id="resultAmount" style="font-size:28px; font-weight:700; color:var(--ink);">—</div>
+      </div>
+      <div class="ccy-select" id="toWrap">
+        <div class="flag" id="toFlag">EU</div>
+        <select id="to"></select>
+      </div>
+    </div>
+
+    <div class="rate-strip">
+      <span>Mid-market rate</span>
+      <strong id="rateValue">—</strong>
+    </div>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">30d high</div><div class="v" id="statHigh">—</div></div>
+    <div class="stat"><div class="k">30d low</div><div class="v" id="statLow">—</div></div>
+    <div class="stat"><div class="k">30d avg</div><div class="v" id="statAvg">—</div></div>
+  </div>
+
+  <div class="status" id="status">Loading rates…</div>
+
+  <div class="badge"><div class="dot"></div>No mark-up, no ads, no sign-up</div>
+
+  <footer>
+    Built by <a href="https://github.com/mrmikeade" target="_blank" rel="noopener">github.com/mrmikeade</a>
+  </footer>
+</div>
+
+<script>
+const API = "https://api.frankfurter.dev/v1";
+const amountEl = document.getElementById('amount');
+const fromEl = document.getElementById('from');
+const toEl = document.getElementById('to');
+const fromFlag = document.getElementById('fromFlag');
+const toFlag = document.getElementById('toFlag');
+const resultAmount = document.getElementById('resultAmount');
+const rateValue = document.getElementById('rateValue');
+const statusEl = document.getElementById('status');
+const statHigh = document.getElementById('statHigh');
+const statLow = document.getElementById('statLow');
+const statAvg = document.getElementById('statAvg');
+
+const NAMES = {
+  USD:"US Dollar", EUR:"Euro", GBP:"British Pound", JPY:"Japanese Yen", AUD:"Australian Dollar",
+  CAD:"Canadian Dollar", CHF:"Swiss Franc", CNY:"Chinese Yuan", NZD:"New Zealand Dollar",
+  SEK:"Swedish Krona", NOK:"Norwegian Krone", DKK:"Danish Krone", INR:"Indian Rupee",
+  SGD:"Singapore Dollar", HKD:"Hong Kong Dollar", MXN:"Mexican Peso", ZAR:"South African Rand",
+  BRL:"Brazilian Real", TRY:"Turkish Lira", PLN:"Polish Zloty", CZK:"Czech Koruna",
+  HUF:"Hungarian Forint", ILS:"Israeli Shekel", KRW:"South Korean Won", MYR:"Malaysian Ringgit",
+  IDR:"Indonesian Rupiah", PHP:"Philippine Peso", RON:"Romanian Leu", BGN:"Bulgarian Lev",
+  ISK:"Icelandic Krona", THB:"Thai Baht"
+};
+
+function fmt(n){
+  try{
+    return new Intl.NumberFormat('en-GB', { style:'decimal', maximumFractionDigits: 4 }).format(n);
+  }catch(e){ return n.toFixed(4); }
+}
+
+function populateSelects(){
+  const codes = Object.keys(NAMES).sort();
+  for(const c of codes){
+    fromEl.appendChild(new Option(c, c));
+    toEl.appendChild(new Option(c, c));
+  }
+  fromEl.value = 'GBP';
+  toEl.value = 'EUR';
+}
+
+function updateFlags(){
+  fromFlag.textContent = fromEl.value.slice(0,2);
+  toFlag.textContent = toEl.value.slice(0,2);
+}
+
+async function convert(){
+  const amount = parseFloat(amountEl.value) || 0;
+  const from = fromEl.value, to = toEl.value;
+  updateFlags();
+  if(from === to){
+    rateValue.textContent = `1 ${from} = 1 ${to}`;
+    resultAmount.textContent = fmt(amount);
+    statusEl.textContent = 'Same currency selected';
+    statusEl.classList.remove('err');
+    return;
+  }
+  statusEl.textContent = 'Fetching live rate…';
+  statusEl.classList.remove('err');
+  try{
+    const res = await fetch(`${API}/latest?base=${from}&symbols=${to}`);
+    if(!res.ok) throw new Error('Rate lookup failed');
+    const data = await res.json();
+    const rate = data.rates[to];
+    rateValue.textContent = `1 ${from} = ${fmt(rate)} ${to}`;
+    resultAmount.textContent = fmt(amount * rate);
+    statusEl.textContent = 'Rate date: ' + data.date;
+    loadStats(from, to);
+  }catch(err){
+    statusEl.textContent = 'Could not reach the rate service. Try again shortly.';
+    statusEl.classList.add('err');
+  }
+}
+
+async function loadStats(from, to){
+  try{
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 30);
+    const iso = d => d.toISOString().slice(0,10);
+    const res = await fetch(`${API}/${iso(start)}..${iso(end)}?base=${from}&symbols=${to}`);
+    if(!res.ok) throw new Error('History lookup failed');
+    const data = await res.json();
+    const values = Object.values(data.rates).map(r => r[to]).filter(v => typeof v === 'number');
+    if(!values.length) return;
+    const high = Math.max(...values), low = Math.min(...values);
+    const avg = values.reduce((a,b)=>a+b,0) / values.length;
+    statHigh.textContent = fmt(high);
+    statLow.textContent = fmt(low);
+    statAvg.textContent = fmt(avg);
+  }catch(err){
+    statHigh.textContent = statLow.textContent = statAvg.textContent = '—';
+  }
+}
+
+document.getElementById('swap').addEventListener('click', () => {
+  const f = fromEl.value;
+  fromEl.value = toEl.value;
+  toEl.value = f;
+  convert();
+});
+
+amountEl.addEventListener('input', convert);
+fromEl.addEventListener('change', convert);
+toEl.addEventListener('change', convert);
+
+populateSelects();
+convert();
+</script>
+</body>
+</html>
