@@ -487,29 +487,74 @@
     opacity: 1;
   }
 
+  /* Result amount overflow truncation & smooth text scaling */
+  #resultAmount {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   @media (max-width: 480px) {
     body {
-      padding: 32px 16px;
+      padding: 24px 12px;
+    }
+    .wrap {
+      max-width: 100%;
     }
     h1 {
       font-size: 26px;
     }
     .sub {
-      font-size: 14px;
+      font-size: 13.5px;
       margin-bottom: 20px;
     }
     .panel {
-      padding: 14px 14px;
+      padding: 12px 14px;
+      gap: 8px;
     }
     .panel input[type=number] {
-      font-size: 24px;
+      font-size: 22px;
     }
     #resultAmount {
-      font-size: 24px !important;
+      font-size: 22px !important;
+    }
+    .ccy-trigger {
+      padding: 6px 10px 6px 6px;
+      gap: 6px;
+    }
+    .rate-strip {
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      padding: 12px 10px 6px;
+      font-size: 13px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 6px 10px;
+      max-width: 100%;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .picker-backdrop {
+      padding: 32px 12px;
     }
     .slider-card {
-      width: calc(100vw - 64px);
-      max-width: 320px;
+      width: calc(100vw - 60px);
+      max-width: 300px;
+      padding: 16px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    body {
+      padding: 16px 8px;
+    }
+    .panel input[type=number], #resultAmount {
+      font-size: 20px !important;
+    }
+    .ccy-trigger .code {
+      font-size: 14px;
     }
   }
 </style>
@@ -531,7 +576,7 @@
       </div>
       <div class="ccy-trigger" id="fromTrigger" role="button" tabindex="0" aria-label="Select source currency">
         <div class="flag-circle" id="fromFlagCircle"><span class="fi" id="fromFlag"></span></div>
-        <span class="code" id="fromCode">NGN</span>
+        <span class="code" id="fromCode">USD</span>
         <span class="chev">&#9662;</span>
       </div>
     </div>
@@ -547,7 +592,7 @@
       </div>
       <div class="ccy-trigger" id="toTrigger" role="button" tabindex="0" aria-label="Select target currency">
         <div class="flag-circle" id="toFlagCircle"><span class="fi" id="toFlag"></span></div>
-        <span class="code" id="toCode">USD</span>
+        <span class="code" id="toCode">NGN</span>
         <span class="chev">&#9662;</span>
       </div>
     </div>
@@ -644,7 +689,7 @@ let CURRENCIES = {
   EUR: { name: "Euro", iso: "eu" }
 };
 
-let state = { from: 'NGN', to: 'USD', pickerTarget: null };
+let state = { from: 'USD', to: 'NGN', pickerTarget: null };
 
 const amountEl = document.getElementById('amount');
 const resultAmount = document.getElementById('resultAmount');
