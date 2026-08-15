@@ -237,7 +237,7 @@
   .rate-strip strong{ color:var(--ink); font-weight:700; font-variant-numeric:tabular-nums; }
   .stats{
     display:grid;
-    grid-template-columns:1fr 1fr 1fr;
+    grid-template-columns:1fr;
     gap:10px;
     margin-top:20px;
     min-height:68px;
@@ -501,11 +501,11 @@
     <div class="panel">
       <div class="amount-col">
         <label for="amount">Amount</label>
-        <input type="number" id="amount" value="1000" min="0" step="any">
+        <input type="number" id="amount" value="1" min="0" step="any">
       </div>
       <div class="ccy-trigger" id="fromTrigger" role="button" tabindex="0" aria-label="Select source currency">
         <div class="flag-circle" id="fromFlagCircle"><span class="fi" id="fromFlag"></span></div>
-        <span class="code" id="fromCode">GBP</span>
+        <span class="code" id="fromCode">NGN</span>
         <span class="chev">&#9662;</span>
       </div>
     </div>
@@ -521,7 +521,7 @@
       </div>
       <div class="ccy-trigger" id="toTrigger" role="button" tabindex="0" aria-label="Select target currency">
         <div class="flag-circle" id="toFlagCircle"><span class="fi" id="toFlag"></span></div>
-        <span class="code" id="toCode">EUR</span>
+        <span class="code" id="toCode">USD</span>
         <span class="chev">&#9662;</span>
       </div>
     </div>
@@ -533,8 +533,6 @@
   </main>
 
   <section class="stats" id="stats" aria-label="Historical exchange rate statistics">
-    <div class="stat"><div class="k">30d high</div><div class="v" id="statHigh">—</div></div>
-    <div class="stat"><div class="k">30d low</div><div class="v" id="statLow">—</div></div>
     <div class="stat"><div class="k">30d avg</div><div class="v" id="statAvg">—</div></div>
   </section>
 
@@ -614,19 +612,18 @@ const FLAG_OVERRIDES = {
 };
 
 let CURRENCIES = {
+  NGN: { name: "Nigerian Naira", iso: "ng" },
+  USD: { name: "US Dollar", iso: "us" },
   GBP: { name: "British Pound Sterling", iso: "gb" },
-  EUR: { name: "Euro", iso: "eu" },
-  USD: { name: "US Dollar", iso: "us" }
+  EUR: { name: "Euro", iso: "eu" }
 };
 
-let state = { from: 'GBP', to: 'EUR', pickerTarget: null };
+let state = { from: 'NGN', to: 'USD', pickerTarget: null };
 
 const amountEl = document.getElementById('amount');
 const resultAmount = document.getElementById('resultAmount');
 const rateValue = document.getElementById('rateValue');
 const statusEl = document.getElementById('status');
-const statHigh = document.getElementById('statHigh');
-const statLow = document.getElementById('statLow');
 const statAvg = document.getElementById('statAvg');
 
 const fromCode = document.getElementById('fromCode');
@@ -777,7 +774,7 @@ async function convert() {
     resultAmount.textContent = fmt(amount);
     statusEl.textContent = 'Same currency selected';
     statusEl.classList.remove('err');
-    statHigh.textContent = statLow.textContent = statAvg.textContent = '—';
+    statAvg.textContent = '—';
     return;
   }
 
@@ -827,15 +824,11 @@ async function loadStats(from, to, currentRate) {
     const validRates = [currentRate, ...results.filter(r => typeof r === 'number' && !isNaN(r))];
 
     if (validRates.length) {
-      const high = Math.max(...validRates);
-      const low = Math.min(...validRates);
       const avg = validRates.reduce((a, b) => a + b, 0) / validRates.length;
-      statHigh.textContent = fmt(high);
-      statLow.textContent = fmt(low);
       statAvg.textContent = fmt(avg);
     }
   } catch(err) {
-    statHigh.textContent = statLow.textContent = statAvg.textContent = '—';
+    statAvg.textContent = '—';
   }
 }
 
@@ -852,31 +845,12 @@ amountEl.addEventListener('input', convert);
 /* Support Slider Logic */
 const supportSlider = document.getElementById('supportSlider');
 const sliderHandle = document.getElementById('sliderHandle');
-let autoOpenTimer, autoCloseTimer;
-
-function expandSlider() {
-  supportSlider.classList.add('expanded');
-}
-
-function collapseSlider() {
-  supportSlider.classList.remove('expanded');
-}
 
 function toggleSlider() {
-  clearTimeout(autoOpenTimer);
-  clearTimeout(autoCloseTimer);
   supportSlider.classList.toggle('expanded');
 }
 
 sliderHandle.addEventListener('click', toggleSlider);
-
-// Timer: slide out 3 seconds after visit, wait 30 seconds, then slide in
-autoOpenTimer = setTimeout(() => {
-  expandSlider();
-  autoCloseTimer = setTimeout(() => {
-    collapseSlider();
-  }, 30000);
-}, 3000);
 
 /* Copy to Clipboard Toast */
 function copyCrypto(address, name) {
