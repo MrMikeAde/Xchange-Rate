@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
 <style>
   :root{
     --green:#9FE870;
@@ -31,7 +32,7 @@
     justify-content:center;
     padding:56px 20px;
   }
-  .wrap{ width:100%; max-width:520px; }
+  .wrap{ width:100%; max-width:520px; position:relative; }
   .brandmark{
     display:flex;
     align-items:center;
@@ -62,6 +63,7 @@
     border:1px solid var(--border);
     border-radius:24px;
     padding:8px;
+    position:relative;
   }
   .panel{
     background:var(--card);
@@ -92,36 +94,40 @@
     padding:0;
   }
   .amount-col{ flex:1; min-width:0; }
-  .ccy-select{
+  .ccy-trigger{
     display:flex;
     align-items:center;
     gap:8px;
     background:var(--bg);
     border:1px solid var(--border);
     border-radius:999px;
-    padding:8px 14px 8px 8px;
+    padding:8px 12px 8px 8px;
     cursor:pointer;
     flex:0 0 auto;
-  }
-  .flag{
-    width:26px; height:26px; border-radius:50%;
-    background:var(--forest);
-    color:var(--green);
-    font-size:10px;
-    font-weight:700;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .ccy-select select{
-    border:none;
-    background:none;
-    outline:none;
     font-family:'Space Grotesk',sans-serif;
+  }
+  .ccy-trigger:hover{ border-color:var(--green-dark); }
+  .flag-circle{
+    width:26px; height:26px; border-radius:50%;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card);
+    flex:0 0 26px;
+  }
+  .flag-circle .fi{
+    width:38px; height:38px;
+    background-size:cover;
+    background-position:center;
+  }
+  .ccy-trigger .code{
     font-weight:700;
     font-size:15px;
     color:var(--ink);
-    appearance:none;
-    cursor:pointer;
-    padding-right:2px;
+  }
+  .ccy-trigger .chev{
+    color:var(--muted);
+    font-size:11px;
+    margin-left:2px;
   }
   .swap-row{
     display:flex;
@@ -193,9 +199,83 @@
     margin-top:14px;
     font-size:12px;
     color:var(--muted);
-    line-height:1.6;
+    display:flex;
+    align-items:center;
+    gap:6px;
   }
-  footer a{ color:var(--forest); }
+  footer a{
+    color:var(--forest);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    text-decoration:none;
+  }
+  footer a:hover{ color:var(--green-dark); }
+  footer svg{ width:16px; height:16px; }
+
+  .picker-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(14,26,5,0.35);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:80px 20px;
+    z-index:50;
+  }
+  .picker-backdrop.open{ display:flex; }
+  .picker{
+    background:var(--bg);
+    border-radius:20px;
+    border:1px solid var(--border);
+    width:100%;
+    max-width:400px;
+    max-height:70vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .picker-search{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    flex:0 0 auto;
+  }
+  .picker-search svg{ flex:0 0 auto; color:var(--muted); }
+  .picker-search input{
+    flex:1;
+    border:none;
+    outline:none;
+    background:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .picker-list{
+    overflow-y:auto;
+    padding:6px;
+  }
+  .picker-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 10px;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  .picker-item:hover{ background:var(--card); }
+  .picker-item .code{ font-weight:700; font-size:14px; color:var(--ink); width:44px; flex:0 0 44px; }
+  .picker-item .name{ font-size:14px; color:var(--muted); flex:1; }
+  .picker-item .check{ color:var(--green-dark); flex:0 0 auto; opacity:0; }
+  .picker-item.selected .check{ opacity:1; }
+  .picker-empty{
+    padding:24px 16px;
+    text-align:center;
+    font-size:13px;
+    color:var(--muted);
+  }
 </style>
 </head>
 <body>
@@ -210,9 +290,10 @@
         <label>Amount</label>
         <input type="number" id="amount" value="1000" min="0" step="any">
       </div>
-      <div class="ccy-select" id="fromWrap">
-        <div class="flag" id="fromFlag">GB</div>
-        <select id="from"></select>
+      <div class="ccy-trigger" id="fromTrigger">
+        <div class="flag-circle"><span class="fi" id="fromFlag"></span></div>
+        <span class="code" id="fromCode">GBP</span>
+        <span class="chev">&#9662;</span>
       </div>
     </div>
 
@@ -223,9 +304,10 @@
         <label>Converted to</label>
         <div id="resultAmount" style="font-size:28px; font-weight:700; color:var(--ink);">—</div>
       </div>
-      <div class="ccy-select" id="toWrap">
-        <div class="flag" id="toFlag">EU</div>
-        <select id="to"></select>
+      <div class="ccy-trigger" id="toTrigger">
+        <div class="flag-circle"><span class="fi" id="toFlag"></span></div>
+        <span class="code" id="toCode">EUR</span>
+        <span class="chev">&#9662;</span>
       </div>
     </div>
 
@@ -246,17 +328,27 @@
   <div class="badge"><div class="dot"></div>No mark-up, no ads, no sign-up</div>
 
   <footer>
-    Built by <a href="https://github.com/mrmikeade" target="_blank" rel="noopener">github.com/mrmikeade</a>
+    Built by
+    <a href="https://github.com/mrmikeade" target="_blank" rel="noopener" aria-label="mrmikeade on GitHub">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      mrmikeade
+    </a>
   </footer>
+</div>
+
+<div class="picker-backdrop" id="pickerBackdrop">
+  <div class="picker">
+    <div class="picker-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="pickerSearch" placeholder="Search...">
+    </div>
+    <div class="picker-list" id="pickerList"></div>
+  </div>
 </div>
 
 <script>
 const API = "https://api.frankfurter.dev/v1";
 const amountEl = document.getElementById('amount');
-const fromEl = document.getElementById('from');
-const toEl = document.getElementById('to');
-const fromFlag = document.getElementById('fromFlag');
-const toFlag = document.getElementById('toFlag');
 const resultAmount = document.getElementById('resultAmount');
 const rateValue = document.getElementById('rateValue');
 const statusEl = document.getElementById('status');
@@ -264,42 +356,105 @@ const statHigh = document.getElementById('statHigh');
 const statLow = document.getElementById('statLow');
 const statAvg = document.getElementById('statAvg');
 
-const NAMES = {
-  USD:"US Dollar", EUR:"Euro", GBP:"British Pound", JPY:"Japanese Yen", AUD:"Australian Dollar",
-  CAD:"Canadian Dollar", CHF:"Swiss Franc", CNY:"Chinese Yuan", NZD:"New Zealand Dollar",
-  SEK:"Swedish Krona", NOK:"Norwegian Krone", DKK:"Danish Krone", INR:"Indian Rupee",
-  SGD:"Singapore Dollar", HKD:"Hong Kong Dollar", MXN:"Mexican Peso", ZAR:"South African Rand",
-  BRL:"Brazilian Real", TRY:"Turkish Lira", PLN:"Polish Zloty", CZK:"Czech Koruna",
-  HUF:"Hungarian Forint", ILS:"Israeli Shekel", KRW:"South Korean Won", MYR:"Malaysian Ringgit",
-  IDR:"Indonesian Rupiah", PHP:"Philippine Peso", RON:"Romanian Leu", BGN:"Bulgarian Lev",
-  ISK:"Icelandic Krona", THB:"Thai Baht"
+const fromCode = document.getElementById('fromCode');
+const toCode = document.getElementById('toCode');
+const fromFlag = document.getElementById('fromFlag');
+const toFlag = document.getElementById('toFlag');
+const fromTrigger = document.getElementById('fromTrigger');
+const toTrigger = document.getElementById('toTrigger');
+
+const pickerBackdrop = document.getElementById('pickerBackdrop');
+const pickerSearch = document.getElementById('pickerSearch');
+const pickerList = document.getElementById('pickerList');
+
+const CURRENCIES = {
+  USD:["US Dollar","us"], EUR:["Euro","eu"], GBP:["British Pound Sterling","gb"],
+  JPY:["Japanese Yen","jp"], AUD:["Australian Dollar","au"], CAD:["Canadian Dollar","ca"],
+  CHF:["Swiss Franc","ch"], CNY:["Chinese Yuan","cn"], NZD:["New Zealand Dollar","nz"],
+  SEK:["Swedish Krona","se"], NOK:["Norwegian Krone","no"], DKK:["Danish Krone","dk"],
+  INR:["Indian Rupee","in"], SGD:["Singapore Dollar","sg"], HKD:["Hong Kong Dollar","hk"],
+  MXN:["Mexican Peso","mx"], ZAR:["South African Rand","za"], BRL:["Brazilian Real","br"],
+  TRY:["Turkish Lira","tr"], PLN:["Polish Zloty","pl"], CZK:["Czech Koruna","cz"],
+  HUF:["Hungarian Forint","hu"], ILS:["Israeli New Shekel","il"], KRW:["South Korean Won","kr"],
+  MYR:["Malaysian Ringgit","my"], IDR:["Indonesian Rupiah","id"], PHP:["Philippine Peso","ph"],
+  RON:["Romanian Leu","ro"], BGN:["Bulgarian Lev","bg"], ISK:["Icelandic Krona","is"],
+  THB:["Thai Baht","th"]
 };
 
+let state = { from: 'GBP', to: 'EUR', pickerTarget: null };
+
 function fmt(n){
-  try{
-    return new Intl.NumberFormat('en-GB', { style:'decimal', maximumFractionDigits: 4 }).format(n);
-  }catch(e){ return n.toFixed(4); }
+  try{ return new Intl.NumberFormat('en-GB', { style:'decimal', maximumFractionDigits: 4 }).format(n); }
+  catch(e){ return n.toFixed(4); }
 }
 
-function populateSelects(){
-  const codes = Object.keys(NAMES).sort();
-  for(const c of codes){
-    fromEl.appendChild(new Option(c, c));
-    toEl.appendChild(new Option(c, c));
+function setFlag(el, code){
+  const iso = CURRENCIES[code] ? CURRENCIES[code][1] : 'un';
+  el.className = 'fi fi-' + iso;
+}
+
+function renderTriggers(){
+  fromCode.textContent = state.from;
+  toCode.textContent = state.to;
+  setFlag(fromFlag, state.from);
+  setFlag(toFlag, state.to);
+}
+
+function buildPickerList(filter){
+  const q = (filter || '').trim().toUpperCase();
+  const codes = Object.keys(CURRENCIES).sort();
+  pickerList.innerHTML = '';
+  const current = state.pickerTarget === 'from' ? state.from : state.to;
+  let shown = 0;
+  for(const code of codes){
+    const [name, iso] = CURRENCIES[code];
+    if(q && !code.includes(q) && !name.toUpperCase().includes(q)) continue;
+    shown++;
+    const item = document.createElement('div');
+    item.className = 'picker-item' + (code === current ? ' selected' : '');
+    item.innerHTML = `
+      <div class="flag-circle"><span class="fi fi-${iso}"></span></div>
+      <span class="code">${code}</span>
+      <span class="name">${name}</span>
+      <svg class="check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+    `;
+    item.addEventListener('click', () => selectCurrency(code));
+    pickerList.appendChild(item);
   }
-  fromEl.value = 'GBP';
-  toEl.value = 'EUR';
+  if(shown === 0){
+    pickerList.innerHTML = '<div class="picker-empty">No currencies match your search.</div>';
+  }
 }
 
-function updateFlags(){
-  fromFlag.textContent = fromEl.value.slice(0,2);
-  toFlag.textContent = toEl.value.slice(0,2);
+function openPicker(target){
+  state.pickerTarget = target;
+  pickerSearch.value = '';
+  buildPickerList('');
+  pickerBackdrop.classList.add('open');
+  setTimeout(() => pickerSearch.focus(), 0);
 }
+
+function closePicker(){
+  pickerBackdrop.classList.remove('open');
+  state.pickerTarget = null;
+}
+
+function selectCurrency(code){
+  if(state.pickerTarget === 'from') state.from = code;
+  else if(state.pickerTarget === 'to') state.to = code;
+  closePicker();
+  renderTriggers();
+  convert();
+}
+
+fromTrigger.addEventListener('click', () => openPicker('from'));
+toTrigger.addEventListener('click', () => openPicker('to'));
+pickerBackdrop.addEventListener('click', (e) => { if(e.target === pickerBackdrop) closePicker(); });
+pickerSearch.addEventListener('input', () => buildPickerList(pickerSearch.value));
 
 async function convert(){
   const amount = parseFloat(amountEl.value) || 0;
-  const from = fromEl.value, to = toEl.value;
-  updateFlags();
+  const from = state.from, to = state.to;
   if(from === to){
     rateValue.textContent = `1 ${from} = 1 ${to}`;
     resultAmount.textContent = fmt(amount);
@@ -346,17 +501,16 @@ async function loadStats(from, to){
 }
 
 document.getElementById('swap').addEventListener('click', () => {
-  const f = fromEl.value;
-  fromEl.value = toEl.value;
-  toEl.value = f;
+  const f = state.from;
+  state.from = state.to;
+  state.to = f;
+  renderTriggers();
   convert();
 });
 
 amountEl.addEventListener('input', convert);
-fromEl.addEventListener('change', convert);
-toEl.addEventListener('change', convert);
 
-populateSelects();
+renderTriggers();
 convert();
 </script>
 </body>
